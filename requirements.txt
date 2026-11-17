@@ -1,0 +1,8 @@
+torch>=2.13
+triton
+open_clip_torch>=4.2
+transformers
+timm
+torchvision
+numpy
+pillow

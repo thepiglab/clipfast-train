@@ -1,0 +1,32 @@
+# Short-sequence self-attention BACKWARD for the BiomedCLIP ViT (N=197 tokens, 12 heads, head dim 64, no mask),
+# bf16 in/out, fp32 accumulation. Inputs: q,k,v [BH,N,64], o [BH,N,64], lse [BH,N] (fp32, natural log),
+# do [BH,N,64]. Output: one tensor [3,BH,N,64] = (dq, dk, dv), bf16. Softmax scale 1/8.
+# mean_err_ratio 2.0: FlashAttention-2 itself (the baseline) rounds P and dS to bf16 before the dV/dQ/dK GEMMs and
+# lands at 1.62x the fp32-P reference's error; candidates may do the same, not worse.
+name = "short_attn_bwd_bf16"
+arch = "any"
+entry = "kernel_fn"
+reference = "reference.py:reference"
+exact = "reference.py:exact"
+baseline = "baseline.py"
+inputs = "inputs.py:make"
+shapes = "shapes.py:SCORED"
+nearby = "shapes.py:NEARBY"
+
+[tolerance]
+atol = 0.03
+rtol = 0.03
+mean_err_ratio = 2.0
+max_err_ratio = 4.0
+
+[rules]
+third_party = "allow"
+
+[bench]
+reps = 32
+copies = 2
+flush_bytes = 268435456
+
+[opmodel]
+bytes = "opmodel.py:min_bytes"
+flops = "opmodel.py:flops"

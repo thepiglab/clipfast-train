@@ -1,0 +1,30 @@
+# Short-sequence self-attention FORWARD for the BiomedCLIP ViT (N=197, 12 heads, head dim 64, no mask), bf16 in/out,
+# fp32 softmax/accumulation. Inputs q,k,v [BH,N,64]; output O [BH,N,64] bf16 (scale 1/8). Candidates must also be
+# able to produce LSE (checked through the backward in cftrain's unit test); only O is scored here.
+name = "short_attn_fwd_bf16"
+arch = "any"
+entry = "kernel_fn"
+reference = "reference.py:reference"
+exact = "reference.py:exact"
+baseline = "baseline.py"
+inputs = "inputs.py:make"
+shapes = "shapes.py:SCORED"
+nearby = "shapes.py:NEARBY"
+
+[tolerance]
+atol = 0.02
+rtol = 0.02
+mean_err_ratio = 2.0   # FA2 (baseline) rounds P to bf16 before P@V; candidates may do the same
+max_err_ratio = 4.0
+
+[rules]
+third_party = "allow"
+
+[bench]
+reps = 32
+copies = 2
+flush_bytes = 268435456
+
+[opmodel]
+bytes = "opmodel.py:min_bytes"
+flops = "opmodel.py:flops"

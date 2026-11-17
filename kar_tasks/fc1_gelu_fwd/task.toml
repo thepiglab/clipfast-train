@@ -1,0 +1,29 @@
+# Training fc1: pre = x @ w^T + b, act = GELU_erf(pre); BOTH written (pre is saved for backward), bf16, fp32
+# accumulation/epilogue, one bf16 rounding per output. Output: one tensor [2, M, N] = (pre, act).
+name = "fc1_gelu_fwd_bf16"
+arch = "any"
+entry = "kernel_fn"
+reference = "reference.py:reference"
+exact = "reference.py:exact"
+baseline = "baseline.py"
+inputs = "inputs.py:make"
+shapes = "shapes.py:SCORED"
+nearby = "shapes.py:NEARBY"
+
+[tolerance]
+atol = 0.03
+rtol = 0.02
+mean_err_ratio = 2.0   # baseline rounds act from the bf16-rounded pre (two roundings); candidates may not be worse
+max_err_ratio = 4.0
+
+[rules]
+third_party = "allow"
+
+[bench]
+reps = 32
+copies = 2
+flush_bytes = 268435456
+
+[opmodel]
+bytes = "opmodel.py:min_bytes"
+flops = "opmodel.py:flops"

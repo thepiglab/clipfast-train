@@ -1,0 +1,15 @@
+# local-only: cluster job scripts, outputs, data, checkpoints
+jobs/
+local/
+results/
+logs/
+runs/
+data/
+*.pt
+*.bin
+*.safetensors
+*.u8
+*.npy
+__pycache__/
+*.pyc
+.env

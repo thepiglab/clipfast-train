@@ -1,0 +1,29 @@
+# Training fc1/fc2 backward: dpre = (dy @ w2) * GELU_erf'(pre), where dy [M,768] is the grad of the fc2 output,
+# w2 [768,3072] the fc2 weight, pre [M,3072] the saved fc1 pre-activation. bf16 in/out, fp32 accumulate/epilogue.
+name = "dgelu_gemm_bf16"
+arch = "any"
+entry = "kernel_fn"
+reference = "reference.py:reference"
+exact = "reference.py:exact"
+baseline = "baseline.py"
+inputs = "inputs.py:make"
+shapes = "shapes.py:SCORED"
+nearby = "shapes.py:NEARBY"
+
+[tolerance]
+atol = 0.03
+rtol = 0.02
+mean_err_ratio = 2.0   # baseline rounds dact to bf16 before gelu_backward (two roundings)
+max_err_ratio = 4.0
+
+[rules]
+third_party = "allow"
+
+[bench]
+reps = 32
+copies = 2
+flush_bytes = 268435456
+
+[opmodel]
+bytes = "opmodel.py:min_bytes"
+flops = "opmodel.py:flops"
